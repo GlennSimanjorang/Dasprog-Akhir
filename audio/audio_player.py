@@ -1,8 +1,18 @@
 """Audio playback wrapper around pygame.mixer.music."""
 
 from pathlib import Path
+from types import ModuleType
+from typing import Any
 
-import pygame
+try:
+    import pygame
+except ImportError:
+    # Fallback placeholder so unit tests can patch `pygame.mixer` even when pygame is uninstalled
+    class _PygameFallback(ModuleType):
+        mixer: Any = None
+        error = Exception
+
+    pygame = _PygameFallback("pygame")
 
 
 class AudioPlayer:
@@ -17,6 +27,8 @@ class AudioPlayer:
     def initialize(self) -> None:
         """Initialize pygame's audio mixer."""
         if not self._initialized:
+            if pygame is None:
+                raise RuntimeError("Modul pygame tidak terinstall. Jalankan 'pip install -r requirements.txt'")
             pygame.mixer.init()
             self._initialized = True
 
